@@ -3,15 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Stranger To Friend — Connect blood donors with recipients instantly. Save lives with secure, fast blood donation matching.">
+    <meta name="theme-color" content="#cc0000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="STF ERAS">
+    <link rel="apple-touch-icon" href="logo.jpg">
     <title>Stranger To Friend</title>
     <link rel="icon" type="image/jpeg" href="logo.jpg">
     <link href="STF.css" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
+        // Register service worker with update check on every load
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/service-worker.js')
-                    .then((reg) => console.log('Service Worker registered.', reg))
+                    .then((reg) => {
+                        console.log('Service Worker registered.', reg);
+                        // Check for updates immediately and every 60 seconds
+                        reg.update();
+                        setInterval(() => reg.update(), 60000);
+                    })
                     .catch((err) => console.log('Service Worker registration failed.', err));
             });
         }
@@ -21,25 +36,44 @@
 
     <!-- Header -->
     <header>
-        <div style="display: flex; align-items: center; gap: 30px;">
-            <div>
+        <div class="header-left">
+            <div class="brand">
                 <h2>Stranger To Friend</h2>
                 <p>produced by-ERAS</p>
             </div>
-            <nav style="display: flex; gap: 20px; margin-left: 20px;">
-                <a href="STF.html" style="text-decoration: none; color: #cc0000; font-weight: bold; font-size: 15px;">Home</a>
-                <a href="STF3.html" style="text-decoration: none; color: #555; font-weight: 600; font-size: 15px;">Find Donors</a>
-                <a href="district-bloodbank.html" style="text-decoration: none; color: #555; font-weight: 600; font-size: 15px;">District Blood Banks</a>
-                <a href="blood-bank.html" style="text-decoration: none; color: #555; font-weight: 600; font-size: 15px;">Blood Bank Portal</a>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">☰</button>
+            <nav class="main-nav" id="mainNav">
+                <a href="STF.html" class="nav-active">Home</a>
+                <a href="STF3.html">Find Donors</a>
+                <a href="district-bloodbank.html">District Blood Banks</a>
+                <a href="blood-bank.html">Blood Bank Portal</a>
             </nav>
         </div>
 
-        <div class="right-header" id="headerAuth" style="display: flex; align-items: center; gap: 10px;">
-            <button id="installAppBtn" style="display: none; background: #e53935; color: white; border: none; padding: 10px 15px; border-radius: 16px; font-weight: bold; cursor: pointer; align-items: center; gap: 6px; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">📥 Install App</button>
+        <div class="right-header" id="headerAuth">
+            <button id="installAppBtn" class="install-btn" style="display: none;">
+                <span class="install-icon">📥</span> Install App
+            </button>
             <a href="STF%20login.html"><button class="login-btn">🔒 Login</button></a>
-            <span class="active-status">● Active</span>
         </div>
     </header>
+
+    <!-- Install Banner (Universal - works on all devices) -->
+    <div class="install-banner" id="installBanner" style="display: none;">
+        <div class="install-banner-content">
+            <div class="install-banner-left">
+                <img src="logo.jpg" alt="STF Logo" class="install-banner-logo">
+                <div>
+                    <strong>Install STF App</strong>
+                    <p>Quick access from your home screen</p>
+                </div>
+            </div>
+            <div class="install-banner-actions">
+                <button id="installBannerBtn" class="install-banner-install">Install</button>
+                <button id="dismissBanner" class="install-banner-dismiss">✕</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Section -->
     <section class="container">
@@ -110,33 +144,33 @@
     </section>
 
     <!-- Action Cards Section -->
-    <section class="action-section" style="display: flex; justify-content: center; gap: 30px; padding: 60px 20px; flex-wrap: wrap;">
+    <section class="action-section">
         <!-- Become a Donor -->
-        <div class="action-card" style="background: #fff; padding: 40px; border-radius: 25px; width: 350px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.05);">
+        <div class="action-card">
             <form action="STF2.html">
-                <div class="action-icon heart" style="font-size: 40px; margin-bottom: 20px;">❤️</div>
+                <div class="action-icon heart">❤️</div>
                 <h3>Become a Donor</h3>
-                <p style="min-height: 48px;">Register to save lives. Your blood can help someone in critical need.</p>
+                <p>Register to save lives. Your blood can help someone in critical need.</p>
                 <button class="btn-primary">Register as Donor →</button>
             </form>
         </div>
 
         <!-- Find a Donor -->
-        <div class="action-card" style="background: #fff; padding: 40px; border-radius: 25px; width: 350px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.05);">
+        <div class="action-card">
             <form action="STF3.html">
-                <div class="action-icon search" style="font-size: 40px; margin-bottom: 20px;">🔎</div>
+                <div class="action-icon search">🔎</div>
                 <h3>Find a Donor</h3>
-                <p style="min-height: 48px;">Search for blood donors in your area. Get instant contact details.</p>
+                <p>Search for blood donors in your area. Get instant contact details.</p>
                 <button class="btn-outline">Request Blood →</button>
             </form>
         </div>
 
         <!-- District Blood Banks -->
-        <div class="action-card" style="background: #fff; padding: 40px; border-radius: 25px; width: 350px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="action-card">
             <div>
-                <div class="action-icon" style="font-size: 40px; margin-bottom: 20px;">🏥</div>
+                <div class="action-icon">🏥</div>
                 <h3>District Blood Banks</h3>
-                <p style="min-height: 48px;">Search available blood stocks at licensed district blood banks near you.</p>
+                <p>Search available blood stocks at licensed district blood banks near you.</p>
             </div>
             <div>
                 <form action="district-bloodbank.html">
@@ -193,54 +227,113 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js"></script>
     <script>
-        // Inline home page logic moved to app.js but kept safe here for redundancy
+        // --- Auth Header Logic ---
         const donorInfo = JSON.parse(localStorage.getItem('donorInfo'));
         if (donorInfo) {
             const authContainer = document.getElementById('headerAuth');
             if (authContainer) {
                 authContainer.innerHTML = `
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <button id="installAppBtn" style="display: none; background: #e53935; color: white; border: none; padding: 10px 15px; border-radius: 16px; font-weight: bold; cursor: pointer; align-items: center; gap: 6px; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">📥 Install App</button>
-                        <a href="donor-dashboard.html" style="text-decoration:none; color:#333; font-weight:bold;">
-                            👤 ${donorInfo.fullName}
-                        </a>
-                        <button onclick="localStorage.removeItem('donorInfo'); window.location.reload();" 
-                                style="background:#ff4b2b; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Logout</button>
-                    </div>
+                    <button id="installAppBtn" class="install-btn" style="display: none;">
+                        <span class="install-icon">📥</span> Install App
+                    </button>
+                    <a href="donor-dashboard.html" style="text-decoration:none; color:#333; font-weight:bold;">
+                        👤 ${donorInfo.fullName}
+                    </a>
+                    <button onclick="localStorage.removeItem('donorInfo'); window.location.reload();" class="logout-btn">Logout</button>
                 `;
             }
         }
 
-        // PWA Installation script
-        let deferredPrompt;
+        // --- Mobile Menu Toggle ---
+        const menuBtn = document.getElementById('mobileMenuBtn');
+        const nav = document.getElementById('mainNav');
+        if (menuBtn) {
+            menuBtn.addEventListener('click', () => {
+                nav.classList.toggle('nav-open');
+                menuBtn.textContent = nav.classList.contains('nav-open') ? '✕' : '☰';
+            });
+        }
 
+        // --- Universal PWA Install Logic ---
+        let deferredPrompt;
+        const installBtn = document.getElementById('installAppBtn');
+        const installBanner = document.getElementById('installBanner');
+        const installBannerBtn = document.getElementById('installBannerBtn');
+        const dismissBanner = document.getElementById('dismissBanner');
+
+        // Check if app is already installed (standalone mode)
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        const bannerDismissed = localStorage.getItem('installBannerDismissed');
+
+        // For Chromium browsers (Chrome, Edge, Samsung Internet, etc.)
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            const btn = document.getElementById('installAppBtn');
-            if (btn) {
-                btn.style.display = 'flex';
+            // Show header install button
+            if (installBtn) installBtn.style.display = 'flex';
+            // Show install banner if not dismissed
+            if (installBanner && !bannerDismissed) {
+                installBanner.style.display = 'flex';
             }
         });
 
+        // For iOS Safari (no beforeinstallprompt support)
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isInSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('CriOS') && !navigator.userAgent.includes('FxiOS');
+        
+        if (isIOS && !isStandalone && !bannerDismissed) {
+            // Show iOS-specific install instructions
+            if (installBanner) {
+                installBanner.style.display = 'flex';
+                if (installBannerBtn) {
+                    installBannerBtn.textContent = 'How to Install';
+                    installBannerBtn.addEventListener('click', () => {
+                        alert('To install this app on iPhone/iPad:\n\n1. Tap the Share button (📤) at the bottom of Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm');
+                    });
+                }
+            }
+            if (installBtn) {
+                installBtn.style.display = 'flex';
+                installBtn.addEventListener('click', () => {
+                    alert('To install this app on iPhone/iPad:\n\n1. Tap the Share button (📤) at the bottom of Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm');
+                });
+            }
+        }
+
+        // Handle install button clicks (Chromium)
         document.addEventListener('click', async (e) => {
-            if (e.target && e.target.id === 'installAppBtn') {
+            if (e.target && (e.target.id === 'installAppBtn' || e.target.id === 'installBannerBtn' || e.target.closest('#installAppBtn') || e.target.closest('#installBannerBtn'))) {
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
                     const { outcome } = await deferredPrompt.userChoice;
                     console.log(`User response to the install prompt: ${outcome}`);
                     deferredPrompt = null;
-                    const btn = document.getElementById('installAppBtn');
-                    if (btn) btn.style.display = 'none';
+                    if (installBtn) installBtn.style.display = 'none';
+                    if (installBanner) installBanner.style.display = 'none';
                 }
             }
         });
 
-        window.addEventListener('appinstalled', (evt) => {
+        // Dismiss banner
+        if (dismissBanner) {
+            dismissBanner.addEventListener('click', () => {
+                if (installBanner) installBanner.style.display = 'none';
+                localStorage.setItem('installBannerDismissed', 'true');
+            });
+        }
+
+        // Hide install UI when app is installed
+        window.addEventListener('appinstalled', () => {
             console.log('STF App was installed.');
-            const btn = document.getElementById('installAppBtn');
-            if (btn) btn.style.display = 'none';
+            if (installBtn) installBtn.style.display = 'none';
+            if (installBanner) installBanner.style.display = 'none';
         });
+
+        // If already in standalone (installed), hide install UI
+        if (isStandalone) {
+            if (installBtn) installBtn.style.display = 'none';
+            if (installBanner) installBanner.style.display = 'none';
+        }
     </script>
 </body>
 </html>

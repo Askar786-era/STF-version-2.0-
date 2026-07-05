@@ -1,4 +1,4 @@
-const CACHE_NAME = 'stf-cache-v1';
+const CACHE_NAME = 'stf-cache-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/STF.html',
@@ -9,7 +9,8 @@ const ASSETS_TO_CACHE = [
   '/STF2.css',
   '/STF3.html',
   '/STF3.css',
-  '/logo.jpg'
+  '/logo.jpg',
+  '/manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
@@ -36,18 +37,32 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// NETWORK-FIRST strategy: always try the network first, fall back to cache
+// This ensures users always see the latest content when online
 self.addEventListener('fetch', (event) => {
-  // Let the browser handle standard non-GET requests or api calls directly
-  if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
+  // Let the browser handle non-GET requests or API calls directly
+  if (event.request.method !== 'GET' || event.request.url.includes('/api/') || event.request.url.includes('/socket.io/')) {
     return;
   }
+
   event.respondWith(
-    caches.match(event.request)
-      .then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        return fetch(event.request);
+    fetch(event.request)
+      .then((networkResponse) => {
+        // Clone the response and update the cache with fresh content
+        const responseClone = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseClone);
+        });
+        return networkResponse;
+      })
+      .catch(() => {
+        // Network failed — serve from cache (offline fallback)
+        return caches.match(event.request).then((cachedResponse) => {
+          return cachedResponse || new Response('You are offline. Please check your connection.', {
+            status: 503,
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        });
       })
   );
 });
