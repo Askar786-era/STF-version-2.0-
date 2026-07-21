@@ -553,29 +553,36 @@ app.post('/api/messages/broadcast', async (req, res) => {
         return res.status(400).json({ success: false, error: 'bloodGroup and message are required.' });
     }
 
-    // Build query to find all matching donors in the district
-    let query = { bloodGroup };
-    if (city) query.city = { $regex: new RegExp(flexibleRegex(city), 'i') };
-    if (state) query.state = { $regex: new RegExp(flexibleRegex(state), 'i') };
-    if (zipCode) query.zipCode = zipCode.trim();
+    // Build query to find all matching donors of this bloodGroup
+    const query = { bloodGroup };
+    const donors = await Donor.find(query);
 
-    const donors = await Donor.find(query).select('phone fullName');
+    const cityRegex = city ? new RegExp(flexibleRegex(city), 'i') : null;
+    const stateRegex = state ? new RegExp(flexibleRegex(state), 'i') : null;
+    const zipClean = zipCode ? zipCode.trim() : null;
 
-    if (donors.length === 0) {
+    const matchingDonors = donors.map(d => d.decryptFields()).filter(d => {
+        if (cityRegex && !cityRegex.test(d.city)) return false;
+        if (stateRegex && !stateRegex.test(d.state)) return false;
+        if (zipClean && d.zipCode !== zipClean) return false;
+        return true;
+    });
+
+    if (matchingDonors.length === 0) {
         return res.json({ success: true, sent: 0, total: 0, message: 'No donors found in this district.' });
     }
 
     // Send SMS to all matching donors (sequentially to avoid rate limits)
     let sentCount = 0;
     const failedPhones = [];
-    for (const donor of donors) {
+    for (const donor of matchingDonors) {
         try {
-            // Decrypt the phone number before sending SMS
-            const realPhone = decrypt(donor.phone);
+            // Phone is already decrypted in matchingDonors (as they run decryptFields())
+            const realPhone = donor.phone;
             const result = await sendSMS(realPhone, message);
             if (result && result.success) {
                 sentCount++;
-                console.log(`📢 [BROADCAST] SMS sent to ${decrypt(donor.fullName)} (${realPhone})`);
+                console.log(`📢 [BROADCAST] SMS sent to ${donor.fullName} (${realPhone})`);
             } else {
                 failedPhones.push({ phone: realPhone, error: result ? result.error : 'Unknown error' });
                 console.error(`❌ [BROADCAST] Failed to send to ${realPhone}:`, result ? result.error : 'No response');
@@ -594,8 +601,8 @@ app.post('/api/messages/broadcast', async (req, res) => {
     );
     io.emit('globalStatsUpdate', { livesSaved: stat.value });
 
-    console.log(`📢 [BROADCAST COMPLETE] Sent ${sentCount}/${donors.length} SMS for blood group ${bloodGroup} in ${city || state || 'district'}`);
-    res.json({ success: true, sent: sentCount, total: donors.length, failures: failedPhones });
+    console.log(`📢 [BROADCAST COMPLETE] Sent ${sentCount}/${matchingDonors.length} SMS for blood group ${bloodGroup} in ${city || state || 'district'}`);
+    res.json({ success: true, sent: sentCount, total: matchingDonors.length, failures: failedPhones });
 });
 
 // Fetch all blood requests for a specific receiver's phone number
@@ -682,7 +689,7 @@ app.post('/api/bloodbank/register', async (req, res) => {
         }
         const bank = new BloodBank({ bankName: bankName.trim(), district: district.trim(), state: state.trim(), phone: phone.trim(), address: (address || '').trim(), password });
         await bank.save();
-        res.status(201).json({ success: true, bank: { _id: bank._id, bankName: bank.bankName, district: bank.district, state: bank.state, phone: bank.phone, address: bank.address, inventory: bank.inventory } });
+        res.status(201).json({ success: true, bank: bank.decryptFields() });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
@@ -702,7 +709,7 @@ app.post('/api/bloodbank/login', async (req, res) => {
         if (!bank) return res.json({ success: false, error: 'Blood bank not found.' });
         const isMatch = await bcrypt.compare(password, bank.password);
         if (!isMatch) return res.json({ success: false, error: 'Invalid password.' });
-        res.json({ success: true, bank: { _id: bank._id, bankName: bank.bankName, district: bank.district, state: bank.state, phone: bank.phone, address: bank.address, inventory: bank.inventory } });
+        res.json({ success: true, bank: bank.decryptFields() });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
@@ -725,7 +732,8 @@ app.get('/api/bloodbank/district', async (req, res) => {
             };
         }
         const banks = await BloodBank.find(query).select('-password');
-        res.json({ success: true, banks });
+        const decryptedBanks = banks.map(b => b.decryptFields());
+        res.json({ success: true, banks: decryptedBanks });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }

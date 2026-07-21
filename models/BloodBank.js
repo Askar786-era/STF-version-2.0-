@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { encrypt, decrypt, deterministicHash } = require('../utils/crypto');
 
 const inventoryItemSchema = new mongoose.Schema({
     bloodGroup: {
@@ -16,6 +17,7 @@ const bloodBankSchema = new mongoose.Schema({
     district:  { type: String, required: true, index: true },
     state:     { type: String, required: true, index: true },
     phone:     { type: String, required: true },
+    phoneHash: { type: String, index: true },
     address:   { type: String, default: '' },
     password:  { type: String, required: true },
     inventory: { type: [inventoryItemSchema], default: [] },
@@ -24,11 +26,33 @@ const bloodBankSchema = new mongoose.Schema({
 
 bloodBankSchema.index({ district: 1, state: 1 });
 
-// Hash password before saving
+// Hash password and encrypt PII before saving
 bloodBankSchema.pre('save', async function () {
     if (this.isModified('password')) {
         this.password = await bcrypt.hash(this.password, 10);
     }
+    if (this.isModified('phone') && this.phone) {
+        this.phoneHash = deterministicHash(this.phone);
+        this.phone = encrypt(this.phone);
+    }
+    if (this.isModified('address') && this.address) {
+        this.address = encrypt(this.address);
+    }
 });
+
+// Helper to decrypt fields
+bloodBankSchema.methods.decryptFields = function() {
+    return {
+        _id: this._id,
+        bankName: this.bankName,
+        district: this.district,
+        state: this.state,
+        phone: decrypt(this.phone),
+        phoneHash: this.phoneHash,
+        address: decrypt(this.address),
+        inventory: this.inventory,
+        createdAt: this.createdAt
+    };
+};
 
 module.exports = mongoose.model('BloodBank', bloodBankSchema);

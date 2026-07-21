@@ -115,3 +115,34 @@ cursor:pointer;
 .login-btn:hover{
 opacity:0.9;
 }
+
+.tabs-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 11px;
+    border: 1.5px solid #eee;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    background: #fdfdfd;
+    color: #555;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    background: #f7f7f7;
+    border-color: #ddd;
+}
+
+.tab-btn.active {
+    background: #c62020;
+    color: white;
+    border-color: #c62020;
+    box-shadow: 0 4px 10px rgba(198, 32, 32, 0.2);
+}

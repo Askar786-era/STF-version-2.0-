@@ -158,6 +158,10 @@ if (window.location.pathname.includes('login')) {
     const loginForm = document.getElementById('loginForm');
     const forgotForm = document.getElementById('forgotPasswordForm');
     const resetForm = document.getElementById('resetPasswordForm');
+    const bankLoginForm = document.getElementById('bloodBankLoginForm');
+    const loginTabs = document.getElementById('loginTabs');
+    const donorTabBtn = document.getElementById('donorTabBtn');
+    const bankTabBtn = document.getElementById('bankTabBtn');
     
     const forgotLink = document.getElementById('forgotPasswordLink');
     const backToLoginLink = document.getElementById('backToLoginLink');
@@ -165,10 +169,28 @@ if (window.location.pathname.includes('login')) {
 
     let forgotPhoneVal = '';
 
+    // Tab Switching
+    if (donorTabBtn && bankTabBtn) {
+        donorTabBtn.onclick = () => {
+            donorTabBtn.classList.add('active');
+            bankTabBtn.classList.remove('active');
+            if (loginForm) loginForm.style.display = 'block';
+            if (bankLoginForm) bankLoginForm.style.display = 'none';
+        };
+        bankTabBtn.onclick = () => {
+            bankTabBtn.classList.add('active');
+            donorTabBtn.classList.remove('active');
+            if (loginForm) loginForm.style.display = 'none';
+            if (bankLoginForm) bankLoginForm.style.display = 'block';
+        };
+    }
+
     // Switch forms
     if (forgotLink) {
         forgotLink.onclick = (e) => {
             e.preventDefault();
+            if (loginTabs) loginTabs.style.display = 'none';
+            if (bankLoginForm) bankLoginForm.style.display = 'none';
             loginForm.style.display = 'none';
             forgotForm.style.display = 'block';
         };
@@ -177,16 +199,18 @@ if (window.location.pathname.includes('login')) {
     if (backToLoginLink) {
         backToLoginLink.onclick = (e) => {
             e.preventDefault();
+            if (loginTabs) loginTabs.style.display = 'flex';
+            donorTabBtn.click();
             forgotForm.style.display = 'none';
-            loginForm.style.display = 'block';
         };
     }
 
     if (backToLoginLinkReset) {
         backToLoginLinkReset.onclick = (e) => {
             e.preventDefault();
+            if (loginTabs) loginTabs.style.display = 'flex';
+            donorTabBtn.click();
             resetForm.style.display = 'none';
-            loginForm.style.display = 'block';
         };
     }
 
@@ -215,6 +239,34 @@ if (window.location.pathname.includes('login')) {
                 }
             } catch (err) {
                 alert('Server error');
+            }
+        });
+    }
+
+    // Submit Blood Bank Login
+    if (bankLoginForm) {
+        bankLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const bankName = document.getElementById('loginBankName').value.trim();
+            const district = document.getElementById('loginDistrict').value.trim();
+            const state = document.getElementById('loginState').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${BASE_URL}/bloodbank/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bankName, district, state, password })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    sessionStorage.setItem('bloodBankSession', JSON.stringify(result.bank));
+                    window.location.href = 'blood-bank.html';
+                } else {
+                    alert('Invalid credentials: ' + (result.error || ''));
+                }
+            } catch (err) {
+                alert('Server error logging in blood bank');
             }
         });
     }
@@ -300,20 +352,21 @@ if (searchForm) {
         const resultsEl = document.getElementById('searchResults');
         resultsEl.innerHTML = '<div style="text-align:center; padding:20px;">🔍 Searching for matching donors...</div>';
 
-        const patientName = document.getElementById('patientName').value;
-        const patientPhone = document.getElementById('patientPhone').value;
-        const bloodGroup = document.getElementById('searchBloodGroup').value;
-        const city = document.getElementById('searchCity').value;
-        const state = document.getElementById('searchState').value;
-        const zipCode = document.getElementById('searchZip').value;
-        const hospital = document.getElementById('requestMessage').value;
+        const patientName = document.getElementById('patientName')?.value?.trim() || '';
+        const familyName = document.getElementById('familyName')?.value?.trim() || '';
+        const patientPhone = document.getElementById('patientPhone')?.value?.trim() || '';
+        const bloodGroup = document.getElementById('searchBloodGroup')?.value || '';
+        const city = document.getElementById('searchCity')?.value?.trim() || '';
+        const state = document.getElementById('searchState')?.value?.trim() || '';
+        const zipCode = document.getElementById('searchZip')?.value?.trim() || '';
+        const hospital = document.getElementById('requestMessage')?.value?.trim() || '';
 
         try {
             // Save the blood request in the database
             await fetch(`${BASE_URL}/blood-requests`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ patientName, phone: patientPhone, bloodGroup, city, state, zipCode, hospital, message: hospital, socketId: socket ? socket.id : "" })
+                body: JSON.stringify({ patientName, familyName, phone: patientPhone, bloodGroup, city, state, zipCode, hospital, message: hospital, socketId: socket ? socket.id : "" })
             });
 
             // Set requester phone in localStorage and emit requesterOnline
