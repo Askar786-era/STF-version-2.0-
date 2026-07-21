@@ -66,6 +66,32 @@
 <input type="password" id="loginPassword" placeholder="Enter admin password" required>
 
 <b><button class="login-btn" type="submit">🔓 Login to Blood Bank →</button></b>
+<p style="text-align: center; margin-top: 15px;">New Blood Bank? <a href="#" id="toggleBankRegisterLink" style="color: red; text-decoration: none;">Register Blood Bank</a></p>
+
+</form>
+
+<form id="bloodBankRegisterForm" style="display: none;">
+
+<label>🏥 Blood Bank Name</label>
+<input type="text" id="regBankName" placeholder="Enter official blood bank name" required>
+
+<label>📍 District</label>
+<input type="text" id="regDistrict" placeholder="e.g. Chennai" required>
+
+<label>📍 State</label>
+<input type="text" id="regState" placeholder="e.g. Tamil Nadu" required>
+
+<label>📱 Contact Phone</label>
+<input type="tel" id="regBankPhone" placeholder="10-digit phone number" required pattern="[0-9]{10}">
+
+<label>🏠 Address (optional)</label>
+<input type="text" id="regBankAddress" placeholder="Full address of the blood bank">
+
+<label>🔐 Admin Password</label>
+<input type="password" id="regBankPassword" placeholder="Create admin password" required>
+
+<b><button class="login-btn" type="submit">✅ Register Blood Bank →</button></b>
+<p style="text-align: center; margin-top: 15px;"><a href="#" id="toggleBankLoginLink" style="color: red; text-decoration: none;">Back to Login</a></p>
 
 </form>
 

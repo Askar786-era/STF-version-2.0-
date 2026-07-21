@@ -683,7 +683,11 @@ app.post('/api/bloodbank/register', async (req, res) => {
         if (!bankName || !district || !state || !phone || !password) {
             return res.status(400).json({ success: false, error: 'bankName, district, state, phone, and password are required.' });
         }
-        const existing = await BloodBank.findOne({ bankName: { $regex: new RegExp('^' + bankName.trim() + '$', 'i') }, district: district.trim(), state: state.trim() });
+        const existing = await BloodBank.findOne({
+            bankName: { $regex: new RegExp('^' + flexibleRegex(bankName) + '$', 'i') },
+            district: { $regex: new RegExp('^' + flexibleRegex(district) + '$', 'i') },
+            state: { $regex: new RegExp('^' + flexibleRegex(state) + '$', 'i') }
+        });
         if (existing) {
             return res.status(409).json({ success: false, error: 'A blood bank with this name already exists in that district.' });
         }
@@ -702,9 +706,9 @@ app.post('/api/bloodbank/login', async (req, res) => {
         if (!bankName || !password) {
             return res.status(400).json({ success: false, error: 'bankName and password are required.' });
         }
-        let query = { bankName: { $regex: new RegExp('^' + bankName.trim() + '$', 'i') } };
-        if (district) query.district = { $regex: new RegExp('^' + district.trim() + '$', 'i') };
-        if (state)    query.state    = { $regex: new RegExp('^' + state.trim() + '$', 'i') };
+        let query = { bankName: { $regex: new RegExp('^' + flexibleRegex(bankName) + '$', 'i') } };
+        if (district) query.district = { $regex: new RegExp('^' + flexibleRegex(district) + '$', 'i') };
+        if (state)    query.state    = { $regex: new RegExp('^' + flexibleRegex(state) + '$', 'i') };
         const bank = await BloodBank.findOne(query);
         if (!bank) return res.json({ success: false, error: 'Blood bank not found.' });
         const isMatch = await bcrypt.compare(password, bank.password);

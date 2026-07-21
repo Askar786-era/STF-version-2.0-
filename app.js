@@ -159,6 +159,9 @@ if (window.location.pathname.includes('login')) {
     const forgotForm = document.getElementById('forgotPasswordForm');
     const resetForm = document.getElementById('resetPasswordForm');
     const bankLoginForm = document.getElementById('bloodBankLoginForm');
+    const bankRegisterForm = document.getElementById('bloodBankRegisterForm');
+    const toggleBankRegisterLink = document.getElementById('toggleBankRegisterLink');
+    const toggleBankLoginLink = document.getElementById('toggleBankLoginLink');
     const loginTabs = document.getElementById('loginTabs');
     const donorTabBtn = document.getElementById('donorTabBtn');
     const bankTabBtn = document.getElementById('bankTabBtn');
@@ -176,11 +179,29 @@ if (window.location.pathname.includes('login')) {
             bankTabBtn.classList.remove('active');
             if (loginForm) loginForm.style.display = 'block';
             if (bankLoginForm) bankLoginForm.style.display = 'none';
+            if (bankRegisterForm) bankRegisterForm.style.display = 'none';
         };
         bankTabBtn.onclick = () => {
             bankTabBtn.classList.add('active');
             donorTabBtn.classList.remove('active');
             if (loginForm) loginForm.style.display = 'none';
+            if (bankLoginForm) bankLoginForm.style.display = 'block';
+            if (bankRegisterForm) bankRegisterForm.style.display = 'none';
+        };
+    }
+
+    if (toggleBankRegisterLink) {
+        toggleBankRegisterLink.onclick = (e) => {
+            e.preventDefault();
+            if (bankLoginForm) bankLoginForm.style.display = 'none';
+            if (bankRegisterForm) bankRegisterForm.style.display = 'block';
+        };
+    }
+
+    if (toggleBankLoginLink) {
+        toggleBankLoginLink.onclick = (e) => {
+            e.preventDefault();
+            if (bankRegisterForm) bankRegisterForm.style.display = 'none';
             if (bankLoginForm) bankLoginForm.style.display = 'block';
         };
     }
@@ -191,6 +212,7 @@ if (window.location.pathname.includes('login')) {
             e.preventDefault();
             if (loginTabs) loginTabs.style.display = 'none';
             if (bankLoginForm) bankLoginForm.style.display = 'none';
+            if (bankRegisterForm) bankRegisterForm.style.display = 'none';
             loginForm.style.display = 'none';
             forgotForm.style.display = 'block';
         };
@@ -267,6 +289,37 @@ if (window.location.pathname.includes('login')) {
                 }
             } catch (err) {
                 alert('Server error logging in blood bank');
+            }
+        });
+    }
+
+    // Submit Blood Bank Registration
+    if (bankRegisterForm) {
+        bankRegisterForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const bankName = document.getElementById('regBankName').value.trim();
+            const district = document.getElementById('regDistrict').value.trim();
+            const state = document.getElementById('regState').value.trim();
+            const phone = document.getElementById('regBankPhone').value.trim();
+            const address = document.getElementById('regBankAddress').value.trim();
+            const password = document.getElementById('regBankPassword').value;
+
+            try {
+                const response = await fetch(`${BASE_URL}/bloodbank/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bankName, district, state, phone, address, password })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    sessionStorage.setItem('bloodBankSession', JSON.stringify(result.bank));
+                    alert('Blood bank registered successfully!');
+                    window.location.href = 'blood-bank.html';
+                } else {
+                    alert('Registration failed: ' + (result.error || ''));
+                }
+            } catch (err) {
+                alert('Server error registering blood bank');
             }
         });
     }
