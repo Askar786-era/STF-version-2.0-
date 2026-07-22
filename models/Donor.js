@@ -6,7 +6,7 @@ const donorSchema = new mongoose.Schema({
     bloodGroup: { type: String, required: true, index: true },
     fullName: { type: String, required: true },
     phone: { type: String, required: true },
-    phoneHash: { type: String, unique: true, index: true },
+    phoneHash: { type: String, unique: true, index: true, sparse: true },
     password: { type: String, required: true },
     city: { type: String, required: true, index: true },
     state: { type: String, required: true, index: true },

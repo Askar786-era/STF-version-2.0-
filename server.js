@@ -14,6 +14,7 @@ if (fs.existsSync(path.join(__dirname, '.env'))) {
 
 const express = require('express');
 const mongoose = require('mongoose');
+mongoose.set('bufferCommands', false);
 const cors = require('cors');
 const http = require('http');
 const bcrypt = require('bcryptjs');
@@ -165,9 +166,10 @@ app.get('/', (req, res) => {
 
 // Database Connection — Uses Atlas (MONGODB_URI env var) on Render/production, falls back to local or in-memory DB
 const { MongoMemoryServer } = require('mongodb-memory-server');
+const { spawn } = require('child_process');
 
 async function connectDB() {
-    const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/stranger_to_friends";
+    const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/stranger_to_friends?directConnection=true";
     
     try {
         await mongoose.connect(MONGODB_URI);
@@ -175,7 +177,44 @@ async function connectDB() {
         console.log(`✅ SUCCESS: Connected to ${dbType}!`);
     } catch (err) {
         if (!process.env.MONGODB_URI) {
-            console.log("⚠️ Local MongoDB connection failed, starting in-memory MongoDB...");
+            console.log("⚠️ Local MongoDB connection failed. Attempting to start local mongod process...");
+            
+            let startedLocalMongod = false;
+            const mongodPaths = [
+                'mongod',
+                'C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe',
+                'C:\\Program Files\\MongoDB\\Server\\7.0\\bin\\mongod.exe',
+                'C:\\Program Files\\MongoDB\\Server\\6.0\\bin\\mongod.exe'
+            ];
+
+            const dbPath = fs.existsSync(path.join(__dirname, 'mongodb_data')) 
+                ? path.join(__dirname, 'mongodb_data') 
+                : path.join(__dirname, 'data');
+
+            for (const binPath of mongodPaths) {
+                try {
+                    const proc = spawn(binPath, ['--dbpath', dbPath, '--bind_ip', '127.0.0.1', '--port', '27017'], { detached: true, stdio: 'ignore' });
+                    proc.unref();
+                    startedLocalMongod = true;
+                    console.log(`🚀 Launched local mongod using ${binPath} with dbpath ${dbPath}`);
+                    break;
+                } catch (spawnErr) {
+                    // Try next path
+                }
+            }
+
+            if (startedLocalMongod) {
+                await new Promise(r => setTimeout(r, 2000));
+                try {
+                    await mongoose.connect(MONGODB_URI);
+                    console.log(`✅ SUCCESS: Connected to Local MongoDB with stored data!`);
+                    return;
+                } catch (retryErr) {
+                    console.log("⚠️ Retry connection to local mongod failed.");
+                }
+            }
+
+            console.log("⚠️ Starting in-memory MongoDB fallback...");
             try {
                 const mongod = await MongoMemoryServer.create();
                 const uri = mongod.getUri();
@@ -702,17 +741,51 @@ app.post('/api/bloodbank/register', async (req, res) => {
 // Blood bank admin login
 app.post('/api/bloodbank/login', async (req, res) => {
     try {
-        const { bankName, district, state, password } = req.body;
+        let { bankName, district, state, password } = req.body;
         if (!bankName || !password) {
-            return res.status(400).json({ success: false, error: 'bankName and password are required.' });
+            return res.status(400).json({ success: false, error: 'Blood bank name or phone, and password are required.' });
         }
-        let query = { bankName: { $regex: new RegExp('^' + flexibleRegex(bankName) + '$', 'i') } };
-        if (district) query.district = { $regex: new RegExp('^' + flexibleRegex(district) + '$', 'i') };
-        if (state)    query.state    = { $regex: new RegExp('^' + flexibleRegex(state) + '$', 'i') };
-        const bank = await BloodBank.findOne(query);
-        if (!bank) return res.json({ success: false, error: 'Blood bank not found.' });
+
+        const inputStr = bankName.trim();
+        let bank = null;
+
+        // 1. Try phone hash lookup if input looks like a phone number
+        const cleanPhone = inputStr.replace(/\D/g, '');
+        if (cleanPhone.length >= 10) {
+            const pHash = deterministicHash(cleanPhone);
+            const phoneBanks = await BloodBank.find({ phoneHash: pHash });
+            for (const pb of phoneBanks) {
+                if (await bcrypt.compare(password, pb.password)) {
+                    return res.json({ success: true, bank: pb.decryptFields() });
+                }
+            }
+        }
+
+        // 2. Try exact/flexible match with bankName, district, and state
+        if (!bank) {
+            let query = { bankName: { $regex: new RegExp('^' + flexibleRegex(inputStr) + '$', 'i') } };
+            if (district && district.trim()) query.district = { $regex: new RegExp('^' + flexibleRegex(district.trim()) + '$', 'i') };
+            if (state && state.trim()) query.state = { $regex: new RegExp('^' + flexibleRegex(state.trim()) + '$', 'i') };
+            bank = await BloodBank.findOne(query);
+        }
+
+        // 3. Fallback: Search by bankName alone (ignoring district/state mismatch)
+        if (!bank) {
+            bank = await BloodBank.findOne({ bankName: { $regex: new RegExp('^' + flexibleRegex(inputStr) + '$', 'i') } });
+        }
+
+        // 4. Fallback: Partial/substring search for bankName
+        if (!bank) {
+            bank = await BloodBank.findOne({ bankName: { $regex: new RegExp(escapeRegex(inputStr), 'i') } });
+        }
+
+        if (!bank) {
+            return res.json({ success: false, error: 'Blood bank not found. Please check the name/phone or register a new blood bank.' });
+        }
+
         const isMatch = await bcrypt.compare(password, bank.password);
         if (!isMatch) return res.json({ success: false, error: 'Invalid password.' });
+
         res.json({ success: true, bank: bank.decryptFields() });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });

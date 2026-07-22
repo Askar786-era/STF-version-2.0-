@@ -22,7 +22,7 @@ const bloodBankSchema = new mongoose.Schema({
     password:  { type: String, required: true },
     inventory: { type: [inventoryItemSchema], default: [] },
     createdAt: { type: Date, default: Date.now }
-});
+}, { autoIndex: false });
 
 bloodBankSchema.index({ district: 1, state: 1 });
 
