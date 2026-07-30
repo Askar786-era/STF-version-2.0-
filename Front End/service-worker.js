@@ -1,14 +1,15 @@
-const CACHE_NAME = 'stf-cache-v3';
+const CACHE_NAME = 'stf-cache-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/STF.html',
   '/STF.css',
   '/STF login.html',
   '/STF login.css',
-  '/STF2.html',
-  '/STF2.css',
-  '/STF3.html',
+  '/Doner register page.html',
+  '/Doner register page.css',
+  '/Request Blood.html',
   '/STF3.css',
+  '/app.js',
   '/logo.jpg',
   '/manifest.json'
 ];

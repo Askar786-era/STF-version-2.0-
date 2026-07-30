@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>Donor Dashboard - Stranger to Friends</title>
     <link rel="icon" type="image/jpeg" href="logo.jpg">
     <style>
@@ -12,14 +13,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 50px;
+            padding: 20px 10px;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
         .dashboard-card {
             background: white;
-            padding: 40px;
+            padding: 30px 24px;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 600px;
+            box-sizing: border-box;
             text-align: center;
         }
         .status-badge {

@@ -7,6 +7,7 @@
 
 body {
     background-color: #f4f4f4;
+    padding: 0 12px;
 }
 
 /* Top Bar */
@@ -34,19 +35,23 @@ body {
 
 /* Center Container */
 .container {
-    height: calc(100vh - 70px);
+    min-height: calc(100vh - 70px);
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 20px 0;
+    box-sizing: border-box;
 }
 
 .form-box {
     background: #ffffff;
-    width: 420px;
-    padding: 35px;
+    width: 100%;
+    max-width: 460px;
+    padding: 35px 24px;
     border-radius: 18px;
     box-shadow: 0 15px 35px rgba(0,0,0,0.08);
     text-align: center;
+    box-sizing: border-box;
 }
 
 .icon-box {

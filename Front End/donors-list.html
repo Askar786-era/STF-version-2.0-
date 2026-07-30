@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="description" content="Registered Blood Donors Directory - Stranger to Friends (STF ERAS). Find and contact active blood donors near you.">
+    <meta name="theme-color" content="#cc0000">
+    <title>Donors List - Stranger to Friends</title>
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <link href="STF.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .donors-page-hero {
+            background: linear-gradient(135deg, #cc0000 0%, #8b0000 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 10px 30px rgba(204, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .donors-page-hero h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .donors-page-hero p {
+            font-size: 14px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .donors-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-top: -30px;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item .num {
+            font-size: 24px;
+            font-weight: 800;
+            color: #cc0000;
+        }
+
+        .stat-item .label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        /* Controls & Filter Bar */
+        .filter-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .search-input-group {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-input-group input {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-input-group input:focus {
+            border-color: #cc0000;
+            box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        .filter-select {
+            padding: 12px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            background: white;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            border-color: #cc0000;
+        }
+
+        /* Blood Group Pills */
+        .blood-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .blood-pill {
+            padding: 6px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 20px;
+            background: white;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .blood-pill:hover, .blood-pill.active {
+            background: #cc0000;
+            color: white;
+            border-color: #cc0000;
+            box-shadow: 0 4px 10px rgba(204,0,0,0.2);
+        }
+
+        /* Donor Cards Grid */
+        .donors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .donor-card {
+            background: white;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .donor-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+        }
+
+        .donor-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .bg-badge {
+            width: 54px;
+            height: 54px;
+            background: linear-gradient(135deg, #ff4d4d, #cc0000);
+            color: white;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 900;
+            box-shadow: 0 4px 12px rgba(204, 0, 0, 0.25);
+            flex-shrink: 0;
+        }
+
+        .donor-meta h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 4px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-online {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-offline {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .donor-details {
+            border-top: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 12px 0;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0;
+        }
+
+        .donor-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-call {
+            flex: 1;
+            padding: 10px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-call:hover {
+            background: #15803d;
+        }
+
+        .btn-sms {
+            flex: 1;
+            padding: 10px;
+            background: #cc0000;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+
+        .btn-sms:hover {
+            background: #b30000;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-bar {
+                flex-direction: row;
+                padding: 15px 10px;
+            }
+
+            .stat-item .num {
+                font-size: 18px;
+            }
+
+            .stat-item .label {
+                font-size: 10px;
+            }
+
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .donors-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <div class="brand">
+                <h2>Stranger To Friend</h2>
+                <p>produced by-ERAS</p>
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">☰</button>
+            <nav class="main-nav" id="mainNav">
+                <a href="STF.html">Home</a>
+                <a href="Request Blood.html">Find Donors</a>
+                <a href="donors-list.html" class="nav-active">Donors List</a>
+                <a href="district-bloodbank.html">District Blood Banks</a>
+                <a href="blood-bank.html">Blood Bank Portal</a>
+            </nav>
+        </div>
+
+        <div class="right-header" id="headerAuth">
+            <a href="STF%20login.html"><button class="login-btn">🔒 Login</button></a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <div class="donors-page-hero">
+        <h1>🩸 Registered Blood Donors</h1>
+        <p>Find ready and verified blood donors across districts. Contact donors directly or send instant SMS alerts.</p>
+    </div>
+
+    <!-- Main Container -->
+    <div class="donors-container">
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="num" id="totalDonorsCount">--</div>
+                <div class="label">Total Donors</div>
+            </div>
+            <div class="stat-item">
+                <div class="num" id="onlineDonorsCount">--</div>
+                <div class="label">Available Now</div>
+            </div>
+            <div class="stat-item">
+                <div class="num" id="districtsCount">--</div>
+                <div class="label">Districts</div>
+            </div>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="filter-card">
+            <div class="filter-row">
+                <div class="search-input-group">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search by donor name, city, district or state..." oninput="filterDonors()">
+                </div>
+                <select id="statusFilter" class="filter-select" onchange="filterDonors()">
+                    <option value="ALL">All Availability</option>
+                    <option value="ONLINE">Available Now Only</option>
+                </select>
+                <button onclick="openBroadcastModalFromList()" style="padding:12px 20px; background:#cc0000; color:white; border:none; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer;">
+                    📢 Broadcast SMS to District
+                </button>
+            </div>
+
+            <!-- Blood Group Pills -->
+            <div style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Filter by Blood Group</div>
+            <div class="blood-pills" id="bloodPills">
+                <div class="blood-pill active" onclick="selectBloodPill('ALL', this)">ALL</div>
+                <div class="blood-pill" onclick="selectBloodPill('A+', this)">A+</div>
+                <div class="blood-pill" onclick="selectBloodPill('A-', this)">A-</div>
+                <div class="blood-pill" onclick="selectBloodPill('B+', this)">B+</div>
+                <div class="blood-pill" onclick="selectBloodPill('B-', this)">B-</div>
+                <div class="blood-pill" onclick="selectBloodPill('O+', this)">O+</div>
+                <div class="blood-pill" onclick="selectBloodPill('O-', this)">O-</div>
+                <div class="blood-pill" onclick="selectBloodPill('AB+', this)">AB+</div>
+                <div class="blood-pill" onclick="selectBloodPill('AB-', this)">AB-</div>
+            </div>
+        </div>
+
+        <!-- Donors Grid -->
+        <div class="donors-grid" id="donorsGrid">
+            <div class="empty-state">
+                <h3>⏳ Loading Registered Donors...</h3>
+                <p>Please wait while we retrieve donor records.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let allDonors = [];
+        let selectedBloodGroup = 'ALL';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchDonorsList();
+        });
+
+        async function fetchDonorsList() {
+            try {
+                const res = await fetch(`${BASE_URL}/donors`);
+                const data = await res.json();
+                
+                if (data.success && Array.isArray(data.donors)) {
+                    allDonors = data.donors;
+                    updateStats();
+                    renderDonors(allDonors);
+                } else {
+                    document.getElementById('donorsGrid').innerHTML = `
+                        <div class="empty-state">
+                            <h3>⚠ Unable to load donors</h3>
+                            <p>${data.error || 'Server error occurred'}</p>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('donorsGrid').innerHTML = `
+                    <div class="empty-state">
+                        <h3>⚠ Network Error</h3>
+                        <p>Could not connect to the server. Please verify your backend server is running.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalDonorsCount').innerText = allDonors.length;
+            const onlineCount = allDonors.filter(d => d.isOnline).length;
+            document.getElementById('onlineDonorsCount').innerText = onlineCount;
+            
+            const cities = new Set(allDonors.map(d => d.city).filter(Boolean));
+            document.getElementById('districtsCount').innerText = cities.size || 1;
+        }
+
+        function selectBloodPill(bg, pillEl) {
+            selectedBloodGroup = bg;
+            document.querySelectorAll('.blood-pill').forEach(p => p.classList.remove('active'));
+            pillEl.classList.add('active');
+            filterDonors();
+        }
+
+        function filterDonors() {
+            const searchTxt = document.getElementById('searchInput').value.trim().toLowerCase();
+            const statusVal = document.getElementById('statusFilter').value;
+
+            const filtered = allDonors.filter(donor => {
+                // Blood group filter
+                if (selectedBloodGroup !== 'ALL' && donor.bloodGroup !== selectedBloodGroup) {
+                    return false;
+                }
+
+                // Status filter
+                if (statusVal === 'ONLINE' && !donor.isOnline) {
+                    return false;
+                }
+
+                // Search query filter
+                if (searchTxt) {
+                    const name = (donor.fullName || '').toLowerCase();
+                    const city = (donor.city || '').toLowerCase();
+                    const state = (donor.state || '').toLowerCase();
+                    const bg = (donor.bloodGroup || '').toLowerCase();
+                    if (!name.includes(searchTxt) && !city.includes(searchTxt) && !state.includes(searchTxt) && !bg.includes(searchTxt)) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            renderDonors(filtered);
+        }
+
+        function renderDonors(donors) {
+            const grid = document.getElementById('donorsGrid');
+            if (!donors || donors.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🩸 No Donors Found</h3>
+                        <p>No registered donors match your current search and filter criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = donors.map(donor => {
+                const phone = donor.phone || 'N/A';
+                const isOnline = donor.isOnline;
+                const statusClass = isOnline ? 'status-online' : 'status-offline';
+                const statusText = isOnline ? '● Available' : '○ Offline';
+
+                return `
+                    <div class="donor-card">
+                        <div>
+                            <div class="donor-header">
+                                <div class="bg-badge">${donor.bloodGroup || 'O+'}</div>
+                                <div class="donor-meta">
+                                    <h3>${donor.fullName || 'Anonymous Donor'}</h3>
+                                    <span class="status-badge ${statusClass}">${statusText}</span>
+                                </div>
+                            </div>
+                            <div class="donor-details">
+                                <div class="detail-row">
+                                    <span>📍</span>
+                                    <span><strong>Location:</strong> ${donor.city || 'District N/A'}, ${donor.state || 'State'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span>📞</span>
+                                    <span><strong>Phone:</strong> ${phone}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="donor-actions">
+                            <a href="tel:${phone}" class="btn-call">📞 Call</a>
+                            <button class="btn-sms" onclick="openDirectSmsModal('${donor.fullName || 'Donor'}', '${phone}')">💬 Send SMS</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openDirectSmsModal(name, phone) {
+            openGlobalChat(name, phone);
+        }
+
+        function openBroadcastModalFromList() {
+            const bg = selectedBloodGroup === 'ALL' ? 'O+' : selectedBloodGroup;
+            broadcastSMS(bg, '', '', '');
+        }
+    </script>
+</body>
+</html>

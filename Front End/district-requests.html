@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>District Blood Requests - Stranger to Friends</title>
     <link rel="icon" type="image/jpeg" href="logo.jpg">
     <style>
@@ -16,12 +16,10 @@
             padding-top: 50px;
             padding-bottom: 50px;
         }
-
         .container {
             width: 90%;
             max-width: 600px;
         }
-
         .header-bar {
             display: flex;
             justify-content: space-between;
@@ -29,7 +27,6 @@
             width: 100%;
             margin-bottom: 20px;
         }
-
         .back-btn {
             background: #666;
             color: white;
@@ -41,47 +38,41 @@
             font-size: 14px;
             font-weight: bold;
         }
-
         .dashboard-card {
             background: white;
             padding: 30px;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             width: 100%;
             box-sizing: border-box;
         }
-
         h2 {
             margin-top: 0;
             color: #333;
             text-align: center;
         }
-
         .subtitle {
             text-align: center;
             color: #666;
             margin-bottom: 30px;
             font-size: 14px;
         }
-
         .request-card {
             background: #f9f9f9;
             border-left: 5px solid #cc0000;
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-
         .request-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
         .blood-badge {
             background: #ffe5e5;
             color: #cc0000;
@@ -90,25 +81,21 @@
             font-weight: bold;
             font-size: 14px;
         }
-
         .patient-name {
             font-weight: bold;
             font-size: 16px;
             color: #333;
         }
-
         .request-details {
             font-size: 13px;
             color: #555;
             line-height: 1.5;
         }
-
         .request-actions {
             display: flex;
             gap: 10px;
             margin-top: 5px;
         }
-
         .call-btn {
             background: #28a745;
             color: white;
@@ -121,11 +108,7 @@
             font-weight: bold;
             text-align: center;
         }
-
-        .call-btn:hover {
-            background: #218838;
-        }
-
+        .call-btn:hover { background: #218838; }
         .msg-btn {
             background: #333;
             color: white;
@@ -138,11 +121,7 @@
             font-weight: bold;
             text-align: center;
         }
-
-        .msg-btn:hover {
-            background: #000;
-        }
-
+        .msg-btn:hover { background: #000; }
         .no-requests {
             text-align: center;
             padding: 40px;
@@ -151,7 +130,6 @@
         }
     </style>
 </head>
-
 <body>
 
     <div class="container">
@@ -193,7 +171,7 @@
                 requests.forEach(req => {
                     const card = document.createElement('div');
                     card.className = 'request-card';
-
+                    
                     const formattedDate = new Date(req.createdAt).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',
@@ -231,5 +209,4 @@
         loadRequests();
     </script>
 </body>
-
 </html>

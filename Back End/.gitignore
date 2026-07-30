@@ -3,4 +3,3 @@ data/
 mongodb_data/
 .env
 scratch/
-*.log

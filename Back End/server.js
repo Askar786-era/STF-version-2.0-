@@ -18,13 +18,13 @@ mongoose.set('bufferCommands', false);
 const cors = require('cors');
 const http = require('http');
 const bcrypt = require('bcryptjs');
-const Donor = require('./models/Donor');
-const Stats = require('./models/Stats');
-const BloodRequest = require('./models/BloodRequest');
-const BloodBank = require('./models/BloodBank');
-const Fulfillment = require('./models/Fulfillment');
+const Donor = require('../models/Donor');
+const Stats = require('../models/Stats');
+const BloodRequest = require('../models/BloodRequest');
+const BloodBank = require('../models/BloodBank');
+const Fulfillment = require('../models/Fulfillment');
 const { Server } = require('socket.io');
-const { decrypt, deterministicHash } = require('./utils/crypto');
+const { decrypt, deterministicHash } = require('../utils/crypto');
 
 const app = express();
 const server = http.createServer(app);
@@ -95,12 +95,13 @@ async function sendSMS(to, body) {
                 })
             });
             const data = await response.json();
+            const errMsg = Array.isArray(data.message) ? data.message.join(', ') : (typeof data.message === 'string' ? data.message : (data.message ? JSON.stringify(data.message) : JSON.stringify(data)));
             if (response.ok && data.return === true) {
                 console.log(`✅ SMS sent successfully via Fast2SMS to ${cleanPhone}`);
                 return { success: true, provider: 'Fast2SMS' };
             } else {
-                console.error(`❌ Fast2SMS Error:`, data.message || data);
-                return { success: false, error: data.message || data, provider: 'Fast2SMS' };
+                console.error(`❌ Fast2SMS Error:`, errMsg);
+                return { success: false, error: errMsg, provider: 'Fast2SMS' };
             }
         } catch (err) {
             console.error(`❌ Error in Fast2SMS send:`, err.message);
@@ -157,11 +158,12 @@ async function sendSMS(to, body) {
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
+const FRONT_END_DIR = path.join(__dirname, '../Front End');
+app.use(express.static(FRONT_END_DIR));
 
 // Serve the main page
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'STF.html'));
+    res.sendFile(path.join(FRONT_END_DIR, 'STF.html'));
 });
 
 // Database Connection — Uses Atlas (MONGODB_URI env var) on Render/production, falls back to local or in-memory DB
@@ -561,6 +563,46 @@ app.get('/api/donors/search', async (req, res) => {
     }
 });
 
+// Get all registered donors with optional filtering (bloodGroup, city, state, isOnline, search)
+app.get('/api/donors', async (req, res) => {
+    try {
+        const { bloodGroup, city, state, isOnline, search } = req.query;
+        const query = {};
+        if (bloodGroup && bloodGroup !== 'ALL') {
+            query.bloodGroup = bloodGroup;
+        }
+        if (isOnline === 'true') {
+            query.isOnline = true;
+        }
+
+        const donors = await Donor.find(query).select('-password');
+
+        const cityRegex = city ? new RegExp(flexibleRegex(city), "i") : null;
+        const stateRegex = state ? new RegExp(flexibleRegex(state), "i") : null;
+        const searchRegex = search ? new RegExp(flexibleRegex(search), "i") : null;
+
+        const decryptedDonors = donors.map(d => d.decryptFields()).filter(d => {
+            if (cityRegex && !cityRegex.test(d.city)) return false;
+            if (stateRegex && !stateRegex.test(d.state)) return false;
+            if (searchRegex) {
+                const matchName = searchRegex.test(d.fullName);
+                const matchCity = searchRegex.test(d.city);
+                const matchState = searchRegex.test(d.state);
+                const matchBlood = searchRegex.test(d.bloodGroup);
+                if (!matchName && !matchCity && !matchState && !matchBlood) return false;
+            }
+            return true;
+        });
+
+        decryptedDonors.forEach(d => {
+            delete d.password;
+        });
+
+        res.json({ success: true, donors: decryptedDonors, count: decryptedDonors.length });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 app.get('/api/stats', async (req, res) => {
     const allStats = await Stats.find({});
