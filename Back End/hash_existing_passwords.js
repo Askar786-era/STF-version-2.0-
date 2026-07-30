@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const Donor = require('../models/Donor');
+const Donor = require('./models/Donor');
 
 // Minimal loader for env
 const fs = require('fs');
