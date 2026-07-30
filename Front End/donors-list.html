@@ -554,13 +554,13 @@
                                     <span><strong>Location:</strong> ${donor.city || 'District N/A'}, ${donor.state || 'State'}</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span>📞</span>
-                                    <span><strong>Phone:</strong> ${phone}</span>
+                                    <span>🔒</span>
+                                    <span><strong>Phone:</strong> Verified Donor</span>
                                 </div>
                             </div>
                         </div>
                         <div class="donor-actions">
-                            <a href="tel:${phone}" class="btn-call">📞 Call</a>
+                            <button class="btn-call" onclick="window.open('call.html?phone=' + encodeURIComponent('${phone}') + '&name=' + encodeURIComponent('${donor.fullName || 'Donor'}') + '&type=donor', 'STF_Call', 'width=400,height=600')">📞 Call</button>
                             <button class="btn-sms" onclick="openDirectSmsModal('${donor.fullName || 'Donor'}', '${phone}')">💬 Send SMS</button>
                         </div>
                     </div>
@@ -569,7 +569,7 @@
         }
 
         function openDirectSmsModal(name, phone) {
-            openGlobalChat(name, phone);
+            openChat(phone, name);
         }
 
         function openBroadcastModalFromList() {

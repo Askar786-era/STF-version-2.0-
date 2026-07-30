@@ -270,8 +270,10 @@ if (window.location.pathname.includes('login')) {
         bankLoginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const bankName = document.getElementById('loginBankName').value.trim();
-            const district = document.getElementById('loginDistrict').value.trim();
-            const state = document.getElementById('loginState').value.trim();
+            const districtEl = document.getElementById('loginDistrict');
+            const stateEl = document.getElementById('loginState');
+            const district = districtEl ? districtEl.value.trim() : '';
+            const state = stateEl ? stateEl.value.trim() : '';
             const password = document.getElementById('loginPassword').value;
 
             try {

@@ -235,6 +235,7 @@
     <script>
         // --- Auth Header Logic ---
         const donorInfo = JSON.parse(localStorage.getItem('donorInfo'));
+        const bloodBankSession = JSON.parse(sessionStorage.getItem('bloodBankSession'));
         if (donorInfo) {
             const authContainer = document.getElementById('headerAuth');
             if (authContainer) {
@@ -246,6 +247,19 @@
                         👤 ${donorInfo.fullName}
                     </a>
                     <button onclick="localStorage.removeItem('donorInfo'); window.location.reload();" class="logout-btn">Logout</button>
+                `;
+            }
+        } else if (bloodBankSession) {
+            const authContainer = document.getElementById('headerAuth');
+            if (authContainer) {
+                authContainer.innerHTML = `
+                    <button id="installAppBtn" class="install-btn" style="display: none;">
+                        <span class="install-icon">📥</span> Install App
+                    </button>
+                    <a href="blood-bank.html" style="text-decoration:none; color:#333; font-weight:bold;">
+                        🏥 ${bloodBankSession.bankName}
+                    </a>
+                    <button onclick="sessionStorage.removeItem('bloodBankSession'); window.location.reload();" class="logout-btn">Logout</button>
                 `;
             }
         }

@@ -514,8 +514,21 @@ app.post('/api/reset-password', async (req, res) => {
 
 app.put('/api/donors/:id', async (req, res) => {
     try {
-        const updatedDonor = await Donor.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.json({ success: true, donor: updatedDonor.decryptFields() });
+        const donor = await Donor.findById(req.params.id);
+        if (!donor) {
+            return res.status(404).json({ success: false, error: 'Donor not found.' });
+        }
+        
+        // Update fields individually so we trigger pre-save hooks
+        const fields = ['bloodGroup', 'fullName', 'phone', 'password', 'city', 'state', 'zipCode', 'isOnline', 'socketId', 'firebaseUid', 'pushToken'];
+        fields.forEach(field => {
+            if (req.body[field] !== undefined) {
+                donor[field] = req.body[field];
+            }
+        });
+
+        await donor.save();
+        res.json({ success: true, donor: donor.decryptFields() });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
